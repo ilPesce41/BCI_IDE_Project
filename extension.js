@@ -724,7 +724,6 @@ let user = {
 
 
 function ApplyColorTheme(data){
-    let config = "settings"
     let theme_prop = "workbench.colorTheme";
     let configuration = vscode.workspace.getConfiguration();
     let current_theme = configuration.get(theme_prop);
@@ -735,8 +734,13 @@ function ApplyColorTheme(data){
     new_theme = "Red";
 
     if(new_theme !== current_theme){
-        configuration.update(theme_prop, new_theme, false);
-        vscode.workspace.applyEdit()
+        let update_global = true;
+        configuration.update(theme_prop, new_theme, update_global);
+        
+        // Set the update global variable to be false in order to update workspace
+        // when updating workspace uncommit the line below
+        // if you try to update a workspace and no folder/project/file has been opened then it will error out.
+        // vscode.user.applyEdit()
     }
 }
 
@@ -789,23 +793,24 @@ function activate(context) {
         
 
         //TESTITING
-        // let data = [
-        //     0.651354849338531,
-        //     0.0,
-        //     0.302940726280212,
-        //     0.0,
-        //     0.560504496097565,
-        //     0.0,
-        //     0.298657447099686
-        //   ];
-        // checkForAlert(data);
-        // ApplyColorTheme(data)
+        let data = [
+            0.651354849338531,
+            0.0,
+            0.302940726280212,
+            0.0,
+            0.560504496097565,
+            0.0,
+            0.298657447099686
+          ];
+        checkForAlert(data);
+        let p = ApplyColorTheme(data)
         //TESTING
 
-		let c = new Cortex(user, socketUrl)
-		let streams = ['met']
-		c.sub(streams)
+		// let c = new Cortex(user, socketUrl)
+		// let streams = ['met']
+		// c.sub(streams)
 
+        return p;
 	});
 
 	context.subscriptions.push(disposable);
