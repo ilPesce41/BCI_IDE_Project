@@ -194,8 +194,6 @@ class Cortex {
         })
     }
 
-
-
     injectMarkerRequest(authToken, sessionId, label, value, port, time){
         let socket = this.socket
         const INJECT_MARKER_REQUEST_ID = 13
@@ -226,8 +224,6 @@ class Cortex {
             })
         })
     }
-
-
 
     stopRecord(authToken, sessionId, recordName){
         let socket = this.socket
@@ -397,9 +393,8 @@ class Cortex {
      * - query session info to prepare for sub and train
      */
     async checkGrantAccessAndQuerySessionInfo(){
-        let requestAccessResult = ""
-        await this.requestAccess().then((result)=>{requestAccessResult=result})
-
+        
+        let requestAccessResult = await this.requestAccess()
         let accessGranted = JSON.parse(requestAccessResult)
     
         // check if user is logged in CortexUI
@@ -441,7 +436,10 @@ class Cortex {
 					status_bar.text =`eng ${datam[0]}, exc${datam[1]}, lex ${datam[2]}, str ${datam[3]}, rel ${datam[4]}, int ${datam[5]}, foc ${datam[6]}`;// data["met"];
 					console.log(n);
 					console.log(datam);
-					status_bar.show();
+                    status_bar.show();
+                    
+                    //Show warning messages when data is updates
+                    checkForAlert(datam);
 				}
 				n = n+1;
             })
@@ -718,6 +716,34 @@ let user = {
 // ---------------------------------------------------------
 
 
+function checkForAlert(data){
+    let interest = data[0];
+    let stress = data[1];
+    let relaxtation = data[2];
+    let excitement = data[3];
+    let engagement = data[4];
+    let focus = data[6];
+
+    if(interest < 0.4){
+        vscode.window.showWarningMessage("Your interest is below operating levels.");
+    }
+    if(stress > 0.4){
+        vscode.window.showWarningMessage("Your stress is above operating levels.");
+    }
+    if(relaxtation < 0.4){
+        vscode.window.showWarningMessage("Your relaxtion is below operating levels.");
+    }
+    if(engagement < 0.4){
+        vscode.window.showWarningMessage("Your engagement is below operating levels.");
+    }
+    if(excitement < 0.4){
+        vscode.window.showWarningMessage("Your excitement is below operating levels.");
+    }
+    if(focus < 0.4){
+        vscode.window.showWarningMessage("Your focus is below operating levels.");
+    }
+}
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
@@ -731,16 +757,13 @@ function activate(context) {
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('extension.runBCI', function () {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		//let status_bar = vscode.window.createStatusBarItem();
-
 		//Initialize Emotive cortex object
-		let c = new Cortex(user, socketUrl)
 		// ---------- sub data stream
 		// have six kind of stream data ['fac', 'pow', 'eeg', 'mot', 'met', 'com']
-		// user could sub one or many stream at once
+        // user could sub one or many stream at once
+        // met stream returns 7 data types
+        
+		let c = new Cortex(user, socketUrl)
 		let streams = ['met']
 		c.sub(streams)
 
