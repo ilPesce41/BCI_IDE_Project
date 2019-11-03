@@ -422,7 +422,9 @@ class Cortex {
      * - logout data stream to console or file
      */
     sub(streams){
-		let status_bar = vscode.window.createStatusBarItem();
+        let status_bar = vscode.window.createStatusBarItem();
+        // config = vscode.workspace.getConfiguration('launch',vscode.window.activeTextEditor.document.uri)
+        // config.apply("workbench.colorTheme", "Solarized Dark")
 		let n = 0;
         this.socket.on('open',async ()=>{
             await this.checkGrantAccessAndQuerySessionInfo()
@@ -432,9 +434,11 @@ class Cortex {
 				//Wait for first pass
 				if(n>0){
 					let datam = JSON.parse(data)['met']
-					//Send Performance data to the extension
-					status_bar.text =`eng ${datam[0]}, exc${datam[1]}, lex ${datam[2]}, str ${datam[3]}, rel ${datam[4]}, int ${datam[5]}, foc ${datam[6]}`;// data["met"];
-					console.log(n);
+                    //Send Performance data to the extension
+                    // eng.isActive","eng","exc.isActive","exc","lex","str.isActive","str","rel.isActive","rel","int.isActive","int","foc.isActive","foc"
+					status_bar.text =`eng ${datam[1]}, exc${datam[3]}, lex ${datam[4]}, str ${datam[6]}, rel ${datam[8]}, int ${datam[10]}, foc ${datam[12]}`;// data["met"];
+                    
+                    console.log(n);
 					console.log(datam);
                     status_bar.show();
                     
