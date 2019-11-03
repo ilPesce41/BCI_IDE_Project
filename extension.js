@@ -438,8 +438,11 @@ class Cortex {
 					console.log(datam);
                     status_bar.show();
                     
-                    //Show warning messages when data is updates
+                    // Show warning messages when data is updates
                     checkForAlert(datam);
+
+                    // Apply Color theme when data is updates
+                    ApplyColorTheme(datam);
 				}
 				n = n+1;
             })
@@ -716,6 +719,23 @@ let user = {
 // ---------------------------------------------------------
 
 
+function ApplyColorTheme(data){
+    let config = "settings"
+    let theme_prop = "workbench.colorTheme";
+    let configuration = vscode.workspace.getConfiguration();
+    let current_theme = configuration.get(theme_prop);
+ 
+    // Get a new theme
+    // Use some sort of threshold
+    // visual studio has about 10 buiilt in themes
+    new_theme = "Red";
+
+    if(new_theme !== current_theme){
+        configuration.update(theme_prop, new_theme, false);
+        vscode.workspace.applyEdit()
+    }
+}
+
 function checkForAlert(data){
     let interest = data[0];
     let stress = data[1];
@@ -763,6 +783,21 @@ function activate(context) {
         // user could sub one or many stream at once
         // met stream returns 7 data types
         
+
+        //TESTITING
+        // let data = [
+        //     0.651354849338531,
+        //     0.0,
+        //     0.302940726280212,
+        //     0.0,
+        //     0.560504496097565,
+        //     0.0,
+        //     0.298657447099686
+        //   ];
+        // checkForAlert(data);
+        // ApplyColorTheme(data)
+        //TESTING
+
 		let c = new Cortex(user, socketUrl)
 		let streams = ['met']
 		c.sub(streams)
