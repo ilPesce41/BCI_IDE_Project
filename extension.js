@@ -7,19 +7,22 @@ function get_webview_content() {
 <html>
   <head>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="test/json">
-      var chart = new google.visualization.BarChart(document.getElementById("container"));
-      const options = {"title": "Foo!"};
-      const columns = ["eng", "exc", "lex", "str", "rel", "int", "foc"]
-      window.addEventListener("message", function (event) {
-          const message = event.data;
-          var data = google.visualization.arrayToDataTable([["source", "level"], ...columns.map((e, i) => [e, message[i]])]);
-          chart.draw(data, options);
-      })
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(function () {
+        var chart = new google.visualization.BarChart(document.getElementById("container"));
+        const options = {"title": "Foo!"};
+        const columns = ["eng", "exc", "lex", "str", "rel", "int", "foc"]
+        window.addEventListener("message", function (event) {
+            const message = event.data;
+            var data = google.visualization.arrayToDataTable([["source", "level"], ...columns.map((e, i) => [e, message[i]])]);
+            chart.draw(data, options);
+        })})
     </script>
   </head>
-  <body id="container">
-    
+  <body>
+    <div id="container" style="width 100%; height 100%">
+    </div>
   </body>
 </html>
 `
