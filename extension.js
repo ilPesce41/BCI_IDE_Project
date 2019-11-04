@@ -727,11 +727,35 @@ function ApplyColorTheme(data){
     let theme_prop = "workbench.colorTheme";
     let configuration = vscode.workspace.getConfiguration();
     let current_theme = configuration.get(theme_prop);
- 
+    let new_theme = "Dark (Visual Studio)";
     // Get a new theme
     // Use some sort of threshold
     // visual studio has about 10 buiilt in themes
-    new_theme = "Red";
+    let interest = data[1];
+    let stress = data[3];
+    let relaxtation = data[6];
+    let excitement = data[8];
+    let engagement = data[10];
+    let focus = data[12];
+
+    if(interest < 0.4){
+        new_theme = "Red"
+    }
+    if(stress > 0.6){
+        new_theme = "Red"
+    }
+    if(relaxtation < 0.4){
+        new_theme = "Red"
+    }
+    if(engagement < 0.4){
+        new_theme = "Red"
+    }
+    if(excitement < 0.4){
+        new_theme = "Red"
+    }
+    if(focus < 0.4){
+        new_theme = "Red"
+    }
 
     if(new_theme !== current_theme){
         let update_global = true;
@@ -745,17 +769,17 @@ function ApplyColorTheme(data){
 }
 
 function checkForAlert(data){
-    let interest = data[0];
-    let stress = data[1];
-    let relaxtation = data[2];
-    let excitement = data[3];
-    let engagement = data[4];
-    let focus = data[6];
+    let interest = data[1];
+    let stress = data[3];
+    let relaxtation = data[6];
+    let excitement = data[8];
+    let engagement = data[10];
+    let focus = data[12];
 
     if(interest < 0.4){
         vscode.window.showWarningMessage("Your interest is below operating levels.");
     }
-    if(stress > 0.4){
+    if(stress > 0.6){
         vscode.window.showWarningMessage("Your stress is above operating levels.");
     }
     if(relaxtation < 0.4){
@@ -793,22 +817,22 @@ function activate(context) {
         
 
         //TESTITING
-        let data = [
-            0.651354849338531,
-            0.0,
-            0.302940726280212,
-            0.0,
-            0.560504496097565,
-            0.0,
-            0.298657447099686
-          ];
-        checkForAlert(data);
-        let p = ApplyColorTheme(data)
+        // let data = [
+        //     0.651354849338531,
+        //     0.0,
+        //     0.302940726280212,
+        //     0.0,
+        //     0.560504496097565,
+        //     0.0,
+        //     0.298657447099686
+        //   ];
+        // checkForAlert(data);
+        // let p = ApplyColorTheme(data)
         //TESTING
 
-		// let c = new Cortex(user, socketUrl)
-		// let streams = ['met']
-		// c.sub(streams)
+		let c = new Cortex(user, socketUrl)
+		let streams = ['met']
+		c.sub(streams)
 
         return p;
 	});
