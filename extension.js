@@ -2,6 +2,33 @@ const WebSocket = require('ws');
 const vscode = require('vscode');
 
 
+function get_webview_content() {
+    return `
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(function () {
+        var chart = new google.visualization.BarChart(document.getElementById("container"));
+        const options = {"title": "Foo!"};
+        const columns = ["eng", "exc", "lex", "str", "rel", "int", "foc"]
+        window.addEventListener("message", function (event) {
+            const message = event.data;
+            const sample_data = [message[1],message[3],message[4],message[6],message[8],message[10],message[12]]
+            var data = google.visualization.arrayToDataTable([["source", "level"], ...columns.map((e, i) => [e, sample_data[i]])]);
+            chart.draw(data, options);
+        })})
+    </script>
+  </head>
+  <body>
+    <div id="container" style="width 100%; height 100%">
+    </div>
+  </body>
+</html>
+`
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 
@@ -414,6 +441,20 @@ class Cortex {
         }   
     }
 
+    openWebview () {
+        this.webviewPanel = vscode.window.createWebviewPanel(
+            'bciChart',
+            "BCI Chart",
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true
+            }
+        )
+        this.webviewPanel.webview.html = get_webview_content();
+        this.webviewPanel.onDidDispose(e => {
+            this.webviePanel = undefined;
+        })
+    }
 
     /**
      * 
@@ -422,10 +463,9 @@ class Cortex {
      * - logout data stream to console or file
      */
     sub(streams){
-        let status_bar = vscode.window.createStatusBarItem();
-        // config = vscode.workspace.getConfiguration('launch',vscode.window.activeTextEditor.document.uri)
-        // config.apply("workbench.colorTheme", "Solarized Dark")
-		let n = 0;
+        this.openWebview();
+	let status_bar = vscode.window.createStatusBarItem();
+	let n = 0;
         this.socket.on('open',async ()=>{
             await this.checkGrantAccessAndQuerySessionInfo()
             this.subRequest(streams, this.authToken, this.sessionId)
@@ -437,7 +477,9 @@ class Cortex {
                     //Send Performance data to the extension
                     // eng.isActive","eng","exc.isActive","exc","lex","str.isActive","str","rel.isActive","rel","int.isActive","int","foc.isActive","foc"
 					status_bar.text =`eng ${datam[1]}, exc${datam[3]}, lex ${datam[4]}, str ${datam[6]}, rel ${datam[8]}, int ${datam[10]}, foc ${datam[12]}`;// data["met"];
-                    
+                    if (this.webviewPanel) {
+                        this.webviewPanel.webview.postMessage(datam)
+                    }
                     console.log(n);
 					console.log(datam);
                     status_bar.show();
@@ -693,7 +735,7 @@ class Cortex {
 }
 
 // ---------------------------------------------------------
-let socketUrl = 'wss://localhost:6868'
+let socketUrl = 'wss://DESKTOP-1TSN8VJ:6868'
 let user = {
     "clientId":"tHOkopHWa8CUiBKJiKBtcr7hRaZpZCsnUYlKdyX2",
     "clientSecret":"Mp4XFxmRQEbOFpiehZeyl39WuNhDEayXlRLdjGgUircaHPeDIba4wEVtIfyLyRIOivq7qg2hKmf9WxnpY7Qe3w8FcpNfyr1661sP8whoVN3BIv4UI6Q7w0lmsyC9PSJN",
