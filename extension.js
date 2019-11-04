@@ -15,7 +15,8 @@ function get_webview_content() {
         const columns = ["eng", "exc", "lex", "str", "rel", "int", "foc"]
         window.addEventListener("message", function (event) {
             const message = event.data;
-            var data = google.visualization.arrayToDataTable([["source", "level"], ...columns.map((e, i) => [e, message[i]])]);
+            const sample_data = [message[1],message[3],message[4],message[6],message[8],message[10],message[12]]
+            var data = google.visualization.arrayToDataTable([["source", "level"], ...columns.map((e, i) => [e, sample_data[i]])]);
             chart.draw(data, options);
         })})
     </script>
