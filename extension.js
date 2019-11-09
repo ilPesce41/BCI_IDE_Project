@@ -1,6 +1,13 @@
 const WebSocket = require('ws');
 const vscode = require('vscode');
-
+var fs = require('fs');
+const { parse } = require('json2csv');
+var date = new Date();
+var date_str =date.toDateString().split(" ").join("");
+var time_str = date.toLocaleTimeString().split(" ").join("");
+time_str = time_str.split(":").join("_");
+let desktop_str = require("os").homedir() + "/Desktop/";
+const session_file = desktop_str+'/'+date_str+"_"+time_str+".csv";
 
 function get_webview_content() {
     return `
@@ -463,7 +470,7 @@ class Cortex {
      * - logout data stream to console or file
      */
     sub(streams){
-        this.openWebview();
+        // this.openWebview();
 	let status_bar = vscode.window.createStatusBarItem();
 	let n = 0;
         this.socket.on('open',async ()=>{
@@ -473,13 +480,42 @@ class Cortex {
                 // log stream data to file or console here
 				//Wait for first pass
 				if(n>0){
-					let datam = JSON.parse(data)['met']
+					let datam = JSON.parse(data)['pow']
                     //Send Performance data to the extension
                     // eng.isActive","eng","exc.isActive","exc","lex","str.isActive","str","rel.isActive","rel","int.isActive","int","foc.isActive","foc"
-					status_bar.text =`eng ${datam[1]}, exc${datam[3]}, lex ${datam[4]}, str ${datam[6]}, rel ${datam[8]}, int ${datam[10]}, foc ${datam[12]}`;// data["met"];
-                    if (this.webviewPanel) {
-                        this.webviewPanel.webview.postMessage(datam)
+                    let AF3_theta = datam[0];
+                    let AF3_alpha = datam[1];
+                    let AF3_betaL = datam[2];
+                    let AF3_betaH = datam[3];
+                    let AF3_gamma = datam[4];
+                    let AF4_theta = datam[20];
+                    let AF4_alpha = datam[21];
+                    let AF4_betaL = datam[22];
+                    let AF4_betaH = datam[23];
+                    let AF4_gamma = datam[24];
+
+                    let log_data = {
+                        "Time": new Date().getTime(),
+                        "AF3/theta":AF3_theta,
+                        "AF3/alpha":AF3_alpha,
+                        "AF3/betaL":AF3_betaL,
+                        "AF3/betaH":AF3_betaH,
+                        "AF3/gamma":AF3_gamma,
+                        "AF4/theta":AF4_theta,
+                        "AF4/alpha":AF4_alpha,
+                        "AF4/betaL":AF4_betaL,
+                        "AF4/betaH":AF4_betaH,
+                        "AF4/gamma":AF4_gamma
                     }
+                    appendCSV(log_data,session_file)
+                    let alpha = (AF3_alpha + AF4_alpha)/2;
+                    let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
+                    
+                    
+                    status_bar.text =`alpha ${alpha}, beta${beta}`;// data["met"];
+                    // if (this.webviewPanel) {
+                    //     this.webviewPanel.webview.postMessage(datam)
+                    // }
                     console.log(n);
 					console.log(datam);
                     status_bar.show();
@@ -735,7 +771,7 @@ class Cortex {
 }
 
 // ---------------------------------------------------------
-let socketUrl = 'wss://DESKTOP-1TSN8VJ:6868'
+let socketUrl = 'wss://localhost:6868'
 let user = {
     "clientId":"tHOkopHWa8CUiBKJiKBtcr7hRaZpZCsnUYlKdyX2",
     "clientSecret":"Mp4XFxmRQEbOFpiehZeyl39WuNhDEayXlRLdjGgUircaHPeDIba4wEVtIfyLyRIOivq7qg2hKmf9WxnpY7Qe3w8FcpNfyr1661sP8whoVN3BIv4UI6Q7w0lmsyC9PSJN",
@@ -773,29 +809,21 @@ function ApplyColorTheme(data){
     // Get a new theme
     // Use some sort of threshold
     // visual studio has about 10 buiilt in themes
-    let interest = data[1];
-    let stress = data[3];
-    let relaxtation = data[6];
-    let excitement = data[8];
-    let engagement = data[10];
-    let focus = data[12];
+    let AF3_theta = data[0];
+    let AF3_alpha = data[1];
+    let AF3_betaL = data[2];
+    let AF3_betaH = data[3];
+    let AF3_gamma = data[4];
+    let AF4_theta = data[20];
+    let AF4_alpha = data[21];
+    let AF4_betaL = data[22];
+    let AF4_betaH = data[23];
+    let AF4_gamma = data[24];
 
-    if(interest < 0.4){
-        new_theme = "Red"
-    }
-    if(stress > 0.6){
-        new_theme = "Red"
-    }
-    if(relaxtation < 0.4){
-        new_theme = "Red"
-    }
-    if(engagement < 0.4){
-        new_theme = "Red"
-    }
-    if(excitement < 0.4){
-        new_theme = "Red"
-    }
-    if(focus < 0.4){
+    let alpha = (AF3_alpha + AF4_alpha)/2;
+    let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
+
+    if(alpha < 0.4){
         new_theme = "Red"
     }
 
@@ -811,33 +839,50 @@ function ApplyColorTheme(data){
 }
 
 function checkForAlert(data){
-    let interest = data[1];
-    let stress = data[3];
-    let relaxtation = data[6];
-    let excitement = data[8];
-    let engagement = data[10];
-    let focus = data[12];
+    let AF3_theta = data[0];
+    let AF3_alpha = data[1];
+    let AF3_betaL = data[2];
+    let AF3_betaH = data[3];
+    let AF3_gamma = data[4];
+    let AF4_theta = data[20];
+    let AF4_alpha = data[21];
+    let AF4_betaL = data[22];
+    let AF4_betaH = data[23];
+    let AF4_gamma = data[24];
+    
+    let alpha = (AF3_alpha + AF4_alpha)/2;
+    let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
 
-    if(interest < 0.4){
+    if(alpha < 0.4){
         vscode.window.showWarningMessage("Your interest is below operating levels.");
-    }
-    if(stress > 0.6){
-        vscode.window.showWarningMessage("Your stress is above operating levels.");
-    }
-    if(relaxtation < 0.4){
-        vscode.window.showWarningMessage("Your relaxtion is below operating levels.");
-    }
-    if(engagement < 0.4){
-        vscode.window.showWarningMessage("Your engagement is below operating levels.");
-    }
-    if(excitement < 0.4){
-        vscode.window.showWarningMessage("Your excitement is below operating levels.");
-    }
-    if(focus < 0.4){
-        vscode.window.showWarningMessage("Your focus is below operating levels.");
     }
 }
 
+function appendCSV(data,filename){
+    var newLine= "\r\n";
+    var fields = ['Time',"AF3/theta","AF3/alpha","AF3/betaL","AF3/betaH","AF3/gamma","AF4/theta","AF4/alpha","AF4/betaL","AF4/betaH","AF4/gamma"];
+    var toCsv = {
+        header: false
+    };
+    fs.stat(filename, function (err, stat) {
+        if (err == null) {
+            var csv = parse(data,toCsv) + newLine;
+            fs.appendFile(filename, csv, function (err) {
+                if (err) throw err;
+            });
+        }
+        else {
+            //write the headers and newline
+            console.log('New file, just writing headers');
+            fields= (fields + newLine);
+
+            fs.writeFile(filename, fields, function (err) {
+                if (err) throw err;
+                console.log('file saved');
+            });
+        }
+    });
+}
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
@@ -873,7 +918,8 @@ function activate(context) {
         //TESTING
 
 		let c = new Cortex(user, socketUrl)
-		let streams = ['met']
+        let streams = ['pow']
+        appendCSV({},session_file);
 		c.sub(streams)
 
         return p;
@@ -890,3 +936,4 @@ module.exports = {
 	activate,
 	deactivate
 }
+
