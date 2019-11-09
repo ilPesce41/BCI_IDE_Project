@@ -8,6 +8,8 @@ var time_str = date.toLocaleTimeString().split(" ").join("");
 time_str = time_str.split(":").join("_");
 let desktop_str = require("os").homedir() + "/Desktop/";
 const session_file = desktop_str+'/'+date_str+"_"+time_str+".csv";
+var alpha_arr = [];
+var beta_arr = [];
 
 function get_webview_content() {
     return `
@@ -510,10 +512,22 @@ class Cortex {
                     appendCSV(log_data,session_file)
                     let alpha = (AF3_alpha + AF4_alpha)/2;
                     let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
-                    
+
+                    alpha_arr.push(alpha);
+                    beta_arr.push(beta);
+                    console.log(alpha_arr)
+                    if (alpha_arr.length>50){
+                        alpha_arr = alpha_arr.splice(1,50)
+                    }
+                    if (beta_arr.length>50){
+                        beta_arr = beta_arr.splice(1,50)
+                    }
+                    const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
+                    alpha = arrAvg(alpha_arr);
+                    beta = arrAvg(beta_arr);
                     
                     if(!isSilent){
-                        status_bar.text =`alpha ${alpha}, beta${beta}`;// data["met"];
+                        status_bar.text =`alpha ${alpha.toFixed(2)}, beta ${beta.toFixed(2)}`;// data["met"];
                         // if (this.webviewPanel) {
                         //     this.webviewPanel.webview.postMessage(datam)
                         // }
@@ -522,10 +536,10 @@ class Cortex {
                         status_bar.show();
                         
                         // Show warning messages when data is updates
-                        checkForAlert(datam);
+                        checkForAlert(alpha,beta);
 
                         // Apply Color theme when data is updates
-                        ApplyColorTheme(datam);
+                        ApplyColorTheme(alpha,beta);
                     }
                     
 				}
@@ -804,35 +818,18 @@ let user = {
 // ---------------------------------------------------------
 
 
-function ApplyColorTheme(data){
+function ApplyColorTheme(alpha,beta){
     let theme_prop = "workbench.colorTheme";
     let configuration = vscode.workspace.getConfiguration();
     let current_theme = configuration.get(theme_prop);
-    let new_theme = "Dark (Visual Studio)";
-    // Get a new theme
-    // Use some sort of threshold
-    // visual studio has about 10 buiilt in themes
-    let AF3_theta = data[0];
-    let AF3_alpha = data[1];
-    let AF3_betaL = data[2];
-    let AF3_betaH = data[3];
-    let AF3_gamma = data[4];
-    let AF4_theta = data[20];
-    let AF4_alpha = data[21];
-    let AF4_betaL = data[22];
-    let AF4_betaH = data[23];
-    let AF4_gamma = data[24];
-
-    let alpha = (AF3_alpha + AF4_alpha)/2;
-    let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
-
-    if(alpha < 0.4){
+    let new_theme = "Abyss";
+    if(alpha < 6.0){
         new_theme = "Red"
     }
     console.log(current_theme);
     console.log(new_theme);
     console.log(new_theme !== current_theme);
-    if(new_theme !== current_theme){
+    // if(new_theme !== current_theme ){
         let update_global = true;
         configuration.update(theme_prop, new_theme, update_global);
         
@@ -840,23 +837,10 @@ function ApplyColorTheme(data){
         // when updating workspace uncommit the line below
         // if you try to update a workspace and no folder/project/file has been opened then it will error out.
         // vscode.user.applyEdit()
-    }
+    // }
 }
 
-function checkForAlert(data){
-    let AF3_theta = data[0];
-    let AF3_alpha = data[1];
-    let AF3_betaL = data[2];
-    let AF3_betaH = data[3];
-    let AF3_gamma = data[4];
-    let AF4_theta = data[20];
-    let AF4_alpha = data[21];
-    let AF4_betaL = data[22];
-    let AF4_betaH = data[23];
-    let AF4_gamma = data[24];
-    
-    let alpha = (AF3_alpha + AF4_alpha)/2;
-    let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
+function checkForAlert(alpha,beta){
 
     if(alpha < 0.4){
         vscode.window.showWarningMessage("Your interest is below operating levels.");
