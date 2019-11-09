@@ -469,7 +469,7 @@ class Cortex {
      * - subcribe for stream
      * - logout data stream to console or file
      */
-    sub(streams){
+    sub(streams,isSilent){
         // this.openWebview();
 	let status_bar = vscode.window.createStatusBarItem();
 	let n = 0;
@@ -512,19 +512,22 @@ class Cortex {
                     let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
                     
                     
-                    status_bar.text =`alpha ${alpha}, beta${beta}`;// data["met"];
-                    // if (this.webviewPanel) {
-                    //     this.webviewPanel.webview.postMessage(datam)
-                    // }
-                    console.log(n);
-					console.log(datam);
-                    status_bar.show();
-                    
-                    // Show warning messages when data is updates
-                    checkForAlert(datam);
+                    if(!isSilent){
+                        status_bar.text =`alpha ${alpha}, beta${beta}`;// data["met"];
+                        // if (this.webviewPanel) {
+                        //     this.webviewPanel.webview.postMessage(datam)
+                        // }
+                        console.log(n);
+                        console.log(datam);
+                        status_bar.show();
+                        
+                        // Show warning messages when data is updates
+                        checkForAlert(datam);
 
-                    // Apply Color theme when data is updates
-                    ApplyColorTheme(datam);
+                        // Apply Color theme when data is updates
+                        ApplyColorTheme(datam);
+                    }
+                    
 				}
 				n = n+1;
             })
@@ -826,7 +829,9 @@ function ApplyColorTheme(data){
     if(alpha < 0.4){
         new_theme = "Red"
     }
-
+    console.log(current_theme);
+    console.log(new_theme);
+    console.log(new_theme !== current_theme);
     if(new_theme !== current_theme){
         let update_global = true;
         configuration.update(theme_prop, new_theme, update_global);
@@ -897,43 +902,33 @@ function activate(context) {
 	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('extension.runBCI', function () {
 		//Initialize Emotive cortex object
-		// ---------- sub data stream
-		// have six kind of stream data ['fac', 'pow', 'eeg', 'mot', 'met', 'com']
-        // user could sub one or many stream at once
-        // met stream returns 7 data types
-        
-
-        //TESTITING
-        // let data = [
-        //     0.651354849338531,
-        //     0.0,
-        //     0.302940726280212,
-        //     0.0,
-        //     0.560504496097565,
-        //     0.0,
-        //     0.298657447099686
-        //   ];
-        // checkForAlert(data);
-        // let p = ApplyColorTheme(data)
-        //TESTING
 
 		let c = new Cortex(user, socketUrl)
         let streams = ['pow']
         appendCSV({},session_file);
-		c.sub(streams)
-
-        return p;
+		c.sub(streams,false);
+    });
+    context.subscriptions.push(disposable);
+    
+    let disposable2 = vscode.commands.registerCommand('extension.runBCI_Silent', function () {
+        console.log("Running Silently!");
+		let c = new Cortex(user, socketUrl)
+        let streams = ['pow']
+        appendCSV({},session_file);
+		c.sub(streams,true)
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable2);
 }
 exports.activate = activate;
+
+
 
 // this method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {
-	activate,
+    activate,
 	deactivate
 }
 

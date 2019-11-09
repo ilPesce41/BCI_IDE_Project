@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.runBCI"
+		"onCommand:extension.runBCI",
+		"onCommand:extension.runBCI_Silent"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -18,7 +19,12 @@
 			{
 				"command": "extension.runBCI",
 				"title": "Run BCI"
+			},
+			{
+				"command": "extension.runBCI_Silent",
+				"title": "Run BCI Silent"
 			}
+
 		]
 	},
 	"scripts": {
