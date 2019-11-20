@@ -10,6 +10,7 @@ let desktop_str = require("os").homedir() + "/Desktop/";
 const session_file = desktop_str+'/'+date_str+"_"+time_str+".csv";
 var alpha_arr = [];
 var beta_arr = [];
+var theta_arr = [];
 
 function get_webview_content() {
     return `
@@ -511,10 +512,12 @@ class Cortex {
                     }
                     appendCSV(log_data,session_file)
                     let alpha = (AF3_alpha + AF4_alpha)/2;
+                    let theta = (AF3_theta + AF4_theta)/2;
                     let beta = (AF3_betaH + AF4_betaH + AF3_betaL + AF4_betaL)/2;
 
                     alpha_arr.push(alpha);
                     beta_arr.push(beta);
+                    theta_arr.push(theta);
                     console.log(alpha_arr)
                     if (alpha_arr.length>50){
                         alpha_arr = alpha_arr.splice(1,50)
@@ -522,12 +525,18 @@ class Cortex {
                     if (beta_arr.length>50){
                         beta_arr = beta_arr.splice(1,50)
                     }
+                    if (theta_arr.length>50){
+                        theta_arr = theta_arr.splice(1,50)
+                    }
                     const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
                     alpha = arrAvg(alpha_arr);
                     beta = arrAvg(beta_arr);
-                    
+                    theta = arrAvg(theta_arr);
+                    let engagement = beta/(alpha + theta);
+
+
                     if(!isSilent){
-                        status_bar.text =`alpha ${alpha.toFixed(2)}, beta ${beta.toFixed(2)}`;// data["met"];
+                        status_bar.text =`engagment ${engagement.toFixed(2)}, alpha ${alpha.toFixed(2)}, beta ${beta.toFixed(2)}, theta ${theta.toFixed(2)}`;// data["met"];
                         // if (this.webviewPanel) {
                         //     this.webviewPanel.webview.postMessage(datam)
                         // }
@@ -536,10 +545,10 @@ class Cortex {
                         status_bar.show();
                         
                         // Show warning messages when data is updates
-                        checkForAlert(alpha,beta);
+                        checkForAlert(engagement);
 
                         // Apply Color theme when data is updates
-                        ApplyColorTheme(alpha,beta);
+                        ApplyColorTheme(engagement);
                     }
                     
 				}
@@ -818,12 +827,12 @@ let user = {
 // ---------------------------------------------------------
 
 
-function ApplyColorTheme(alpha,beta){
+function ApplyColorTheme(engagement){
     let theme_prop = "workbench.colorTheme";
     let configuration = vscode.workspace.getConfiguration();
     let current_theme = configuration.get(theme_prop);
     let new_theme = "Abyss";
-    if(alpha < 6.0){
+    if(engagement < 0.3){
         new_theme = "Red"
     }
     console.log(current_theme);
@@ -840,10 +849,10 @@ function ApplyColorTheme(alpha,beta){
     // }
 }
 
-function checkForAlert(alpha,beta){
+function checkForAlert(engagement){
 
-    if(alpha < 0.4){
-        vscode.window.showWarningMessage("Your interest is below operating levels.");
+    if(engagement < 0.3){
+        vscode.window.showWarningMessage("Your engagement is below operating levels.");
     }
 }
 
