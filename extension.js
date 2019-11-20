@@ -544,8 +544,7 @@ class Cortex {
                         console.log(datam);
                         status_bar.show();
                         
-                        // Show warning messages when data is updates
-                        checkForAlert(engagement);
+                        
 
                         // Apply Color theme when data is updates
                         ApplyColorTheme(engagement);
@@ -838,7 +837,10 @@ function ApplyColorTheme(engagement){
     console.log(current_theme);
     console.log(new_theme);
     console.log(new_theme !== current_theme);
-    // if(new_theme !== current_theme ){
+    if(new_theme !== current_theme ){
+        // Show warning messages when data is updates
+        checkForAlert(engagement);
+    }
         let update_global = true;
         configuration.update(theme_prop, new_theme, update_global);
         
