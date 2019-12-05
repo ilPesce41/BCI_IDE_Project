@@ -831,7 +831,7 @@ function ApplyColorTheme(engagement){
     let configuration = vscode.workspace.getConfiguration();
     let current_theme = configuration.get(theme_prop);
     let new_theme = "Abyss";
-    if(engagement < 0.3){
+    if(engagement < 0.13){
         new_theme = "Red"
     }
     console.log(current_theme);
@@ -853,7 +853,7 @@ function ApplyColorTheme(engagement){
 
 function checkForAlert(engagement){
 
-    if(engagement < 0.3){
+    if(engagement < 0.13){
         vscode.window.showWarningMessage("Your engagement is below operating levels.");
     }
 }

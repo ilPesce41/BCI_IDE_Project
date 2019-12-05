@@ -1,0 +1,30 @@
+Installation
+----------------------------------------------------------------------------------------------
+
+(1) First VSCode must be installed on the computer  https://code.visualstudio.com/download
+
+(2) Due to Emotive not giving us a Public key for others to run the system, to use this application you will have download 
+the Emotvie BCI app located here: https://www.emotiv.com/my-account/downloads/
+
+And log in using these credentials:
+EmotiveId: coleh
+EmotivePass: VSCodeBCI
+*Make sure to also log into the Emotive BCI App that is installed on the computer
+
+(3) Install the extension by opening a command prompt in the main directory of this project.
+Type "code --install-extension emotivestatusmetric-0.0.1.vsix" in the command line and hit enter
+
+
+(4)  Next you must pair the headset with your computer
+       - Open the Emotive BCI App with the dongle plugged into the computer and the headset turned on.
+       - Choose the "Connect" button for your device under available devices.
+(5)  Ensure the Headset has a good fit and open VSCode.
+(6)  Press F1 and then type "Run BCI" and hit Enter.
+(7)  The first time you will have to approve the application. 
+(8)  Open the Emotive BCI App>Click applications> Click approve
+(9)  Rerun the extension in VS Code.
+(10) If all steps are followed, the extension should start running.
+    - Your Engagement will be displayed in the statusbar
+    - The theme of VS Code will change, adapting with your engagement score
+    - A log of your brain data will be made on the desktop.
+

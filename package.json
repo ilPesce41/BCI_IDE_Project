@@ -3,6 +3,7 @@
 	"displayName": "EmotiveStatusMetric",
 	"description": "Gives a status bar of emotive metrics",
 	"version": "0.0.1",
+	"publisher": "BCIDevHelp",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
